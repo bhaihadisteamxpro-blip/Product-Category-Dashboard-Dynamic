@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             if (in_array($ext, $allowed)) {
                 $new_filename = 'cat_' . time() . '_' . rand(1000,9999) . '.' . $ext;
-                $target_dir = "uploads/categories/";
+                $target_dir = "../User_admin/uploads/categories/";
                 $target_file = $target_dir . $new_filename;
                 
                 // Ensure directory exists

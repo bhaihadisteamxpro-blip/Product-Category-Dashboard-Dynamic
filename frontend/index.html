@@ -1222,51 +1222,62 @@
       }
 
       function loadProducts(isLoggedIn) {
-        // Updated API call which returns categories too if needed, but for now products list
-        // We reuse get_products_front but we might need to modify it to allow guests if we want them to see *something*
-        // However, the current PHP api BLOCKS guests. 
-        // We will modify the JS to handle the 'Not logged in' error gracefully if we want to show a "Login to view" message,
-        // OR we update the API to return data for guests (without prices).
-
-        // For now, let's assume we want to show the SECTION to everyone, but the API might fail for guests.
-        // Let's UPDATE the API to allow guests but hide prices.
-
         fetch('../api/get_products_front.php')
           .then(res => res.json())
           .then(res => {
             let html = '';
-            if (res.status === 'success') {
+            if (res.status === 'success' && res.products.length > 0) {
               res.products.forEach(p => {
-                let img = p.image ? '../' + p.image : 'https://via.placeholder.com/300';
-                // Logic: IF logged in, show Price. ELSE show "Login to view price".
-                // The API itself might handle hiding the price, or we do it here if API sends it.
-                // Ideally, API should not send price if guest.
+                // Image handling: check if p.image exists. 
+                // The API stores relative path "uploads/products/..." inside the API folder structure.
+                // From frontend/index.html, we need to go to ../api/uploads/products/...
+                let imgPath = p.image ? '../api/' + p.image : 'https://via.placeholder.com/400x300?text=No+Image';
 
-                let priceHtml = p.price !== undefined ? `<h6 class="text-primary mb-2">₹${p.price}</h6>` : `<h6 class="text-muted mb-2"><i class="lni lni-lock"></i> Login to view price</h6>`;
-                let addCartBtn = p.price !== undefined ? `<button class="btn btn-outline-primary btn-sm w-100">Add to Cart</button>` : `<button class="btn btn-secondary btn-sm w-100" disabled>Login to Buy</button>`;
+                // Price & Button Logic
+                let priceHtml = '';
+                let buttonHtml = '';
+
+                if (p.price !== undefined) {
+                  priceHtml = `<h5 class="text-primary font-weight-bold">₹${parseFloat(p.price).toFixed(2)}</h5>`;
+                  buttonHtml = `<button class="button button-sm radius-30 w-100">Add to Cart</button>`;
+                } else {
+                  priceHtml = `<h5 class="text-muted" style="filter: blur(4px);">₹999</h5><small class="text-danger"><i class="lni lni-lock"></i> Login to view price</small>`;
+                  buttonHtml = `<button class="button button-sm radius-30 w-100" style="background:#ccc; cursor:not-allowed;" disabled>Login to Buy</button>`;
+                }
 
                 html += `
-                        <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card h-100 shadow-sm border-0">
-                                <img src="${img}" class="card-img-top" alt="${p.product_name}" style="height: 200px; object-fit: cover;">
-                                <div class="card-body">
-                                    <h5 class="card-title">${p.product_name}</h5>
-                                    ${priceHtml}
-                                    <span class="badge bg-info text-white mb-2">${p.category_name || 'General'}</span>
-                                    <p class="card-text">${p.product_description || 'No description'}</p>
-                                </div>
-                                <div class="card-footer bg-white border-0">
-                                    ${addCartBtn}
-                                </div>
-                            </div>
-                        </div>`;
+                  <div class="col-lg-4 col-md-6 mb-4 wow fadeInUp" data-wow-delay=".2s">
+                    <div class="single-blog product-card" style="background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: transform 0.3s ease;">
+                      <div class="blog-img" style="height: 250px; overflow: hidden; position: relative;">
+                        <a href="#">
+                          <img src="${imgPath}" alt="${p.product_name}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                        </a>
+                        <span class="category-badge" style="position: absolute; top: 15px; left: 15px; background: #00bcd4; color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">${p.category_name || 'General'}</span>
+                      </div>
+                      <div class="blog-content" style="padding: 25px;">
+                        <h4 class="mb-2"><a href="#" style="color: #333; text-decoration: none;">${p.product_name}</a></h4>
+                        <p class="mb-3 text-muted" style="font-size: 0.9rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${p.product_description || 'No description available for this product.'}</p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                          ${priceHtml}
+                        </div>
+                        <div class="mt-4">
+                           ${buttonHtml}
+                        </div>
+                      </div>
+                    </div>
+                  </div>`;
               });
             } else {
-              // If API returns error (e.g. not logged in), show meaningful message
-              html = '<div class="col-12 text-center text-muted"><p>Please <a href="#" onclick="document.getElementById(\'loginBtn\').click()">Log In</a> to view our exclusive products.</p></div>';
+              html = `<div class="col-12 text-center py-5">
+                        <div class="empty-state">
+                            <i class="lni lni-package" style="font-size: 4rem; color: #ddd;"></i>
+                            <h4 class="mt-3 text-muted">No products found</h4>
+                        </div>
+                      </div>`;
             }
             document.getElementById('productList').innerHTML = html;
-          });
+          })
+          .catch(err => console.error('Error fetching products:', err));
       }
 
       // Init

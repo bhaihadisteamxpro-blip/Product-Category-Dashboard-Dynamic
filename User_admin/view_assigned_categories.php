@@ -14,7 +14,7 @@ $admin_id_str = $_SESSION['admin_id'];
 $department = $_SESSION['department'] ?? 'General';
 
 // Fetch assigned categories for current admin
-$query = "SELECT c.id, c.category_name, c.category_description, c.status, 
+$query = "SELECT c.id, c.category_name, c.category_description, c.image, c.status, 
                 (SELECT COUNT(*) FROM products p 
                  INNER JOIN admin_products ap ON p.id = ap.product_id 
                  WHERE p.category_id = c.id AND p.status = 'active' AND ap.admin_id = $user_id) as active_products
@@ -34,12 +34,7 @@ $result = $conn->query($query);
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="../assets/plugins/fontawesome-free/css/all.min.css">
   <link rel="stylesheet" href="../assets/dist/css/adminlte.min.css">
-  <style>
-    .user-info-sidebar { text-align: center; padding: 15px; background: rgba(0,0,0,0.1); border-radius: 10px; margin: 10px; }
-    .user-avatar { width: 60px; height: 60px; background: #dc3545; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; margin: 0 auto 15px; }
-    .user-name { font-size: 16px; font-weight: bold; color: white; margin-bottom: 5px; }
-    .user-role { display: inline-block; padding: 3px 10px; background: #dc3545; color: white; border-radius: 15px; font-size: 12px; font-weight: bold; }
-  </style>
+
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
@@ -51,50 +46,66 @@ $result = $conn->query($query);
     </ul>
   </nav>
 
-  <!-- Sidebar -->
-  <aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <a href="Admin.php" class="brand-link">
-      <span class="brand-text font-weight-light" style="font-weight: bold !important; font-family: times; color: white !important; text-align: center !important; margin-left: 26px !important; font-size: 25px !important;">ADMIN PANEL</span>
-    </a>
-    <div class="sidebar">
-      <div class="user-info-sidebar">
-        <div class="user-avatar"><?php echo strtoupper(substr($full_name, 0, 1)); ?></div>
-        <div class="user-name"><?php echo htmlspecialchars($full_name); ?></div>
-        <div class="user-role"><?php echo strtoupper($department); ?> ADMIN</div>
-      </div>
-      <nav class="mt-2">
-        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-          <li class="nav-item"><a href="Admin.php" class="nav-link"><i class="nav-icon fas fa-tachometer-alt"></i><p>Dashboard</p></a></li>
-          <li class="nav-item menu-open">
-            <a href="#" class="nav-link active"><i class="nav-icon fas fa-archive"></i><p>Categories <i class="fas fa-angle-left right"></i></p></a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item"><a href="view_assigned_categories.php" class="nav-link active"><i class="far fa-circle nav-icon"></i><p>View Assigned</p></a></li>
-              <li class="nav-item"><a href="edit_assigned_categories.php" class="nav-link"><i class="far fa-circle nav-icon"></i><p>Manage Assigned</p></a></li>
-            </ul>
-          </li>
-          <li class="nav-item"><a href="admin_settings.php" class="nav-link"><i class="nav-icon fas fa-cog"></i><p>Settings</p></a></li>
-        </ul>
-      </nav>
-    </div>
-  </aside>
+  <?php include 'sidebar.php'; ?>
 
   <!-- Content -->
   <div class="content-wrapper">
-    <section class="content-header"><div class="container-fluid"><h1>Assigned Categories</h1></div></section>
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1><i class="fas fa-archive mr-2"></i>Assigned Categories</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="Admin.php">Home</a></li>
+              <li class="breadcrumb-item active">Assigned Categories</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+    
     <section class="content">
       <div class="container-fluid">
-        <div class="card">
-          <div class="card-header"><h3 class="card-title">List of categories you are responsible for</h3></div>
-          <div class="card-body p-0">
-            <table class="table table-striped">
-              <thead><tr><th>Category Name</th><th>Description</th><th>Active Products</th><th>Status</th></tr></thead>
+        <div class="card card-primary card-outline shadow-sm">
+          <div class="card-header">
+            <h3 class="card-title">List of categories you are responsible for</h3>
+            <div class="card-tools">
+              <span class="badge badge-primary"><?php echo $result->num_rows; ?> Assigned</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <table class="table table-hover text-nowrap valign-middle">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Category Name</th>
+                  <th>Description</th>
+                  <th>Active Products</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
               <tbody>
                 <?php while($row = $result->fetch_assoc()): ?>
+                <?php
+                    // Check if image path needs 'api' prefix if not present
+                    if (!empty($row['image'])) {
+                         $img_path = (strpos($row['image'], 'api/') === false) ? '../api/' . $row['image'] : '../' . $row['image'];
+                    } else {
+                         $img_path = '../assets/img/no-image.png';
+                    }
+                ?>
                 <tr>
-                  <td><strong><?php echo $row['category_name']; ?></strong></td>
-                  <td><?php echo $row['category_description']; ?></td>
-                  <td><span class="badge badge-info"><?php echo $row['active_products']; ?> Products</span></td>
-                  <td><span class="badge badge-success"><?php echo ucfirst($row['status']); ?></span></td>
+                  <td>
+                    <div style="width: 50px; height: 50px; overflow: hidden; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <img src="<?php echo $img_path; ?>" alt="Cat" style="width: 100%; height: 100%; object-fit: cover;" class="img-zoom" title="Click to Zoom">
+                    </div>
+                  </td>
+                  <td><strong style="color: #007bff;"><?php echo htmlspecialchars($row['category_name']); ?></strong></td>
+                  <td><span class="text-muted" style="max-width: 200px; display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><?php echo htmlspecialchars($row['category_description']); ?></span></td>
+                  <td><span class="badge badge-info" style="font-size: 14px; padding: 6px 12px; border-radius: 20px;"><?php echo $row['active_products']; ?> Products</span></td>
+                  <td><span class="badge badge-success" style="font-size: 12px;"><?php echo ucfirst($row['status']); ?></span></td>
                 </tr>
                 <?php endwhile; ?>
               </tbody>
@@ -104,9 +115,38 @@ $result = $conn->query($query);
       </div>
     </section>
   </div>
+
+  <!-- Zoom Modal -->
+  <div class="modal fade" id="imageModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="background: transparent; border: none; box-shadow: none;">
+            <div class="modal-body text-center">
+                <img src="" id="modalImage" class="img-fluid shadow-lg" style="border-radius: 10px; max-height: 80vh;">
+                <button type="button" class="btn btn-light mt-3" data-dismiss="modal"><i class="fas fa-times mr-2"></i>Close</button>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <footer class="main-footer">
+    <div class="float-right d-none d-sm-block"><b>Version</b> 1.0.0</div>
+    <strong>Copyright &copy; 2024 <a href="#">Al Hadi Solutions</a>.</strong> All rights reserved.
+  </footer>
 </div>
+
 <script src="../assets/plugins/jquery/jquery.min.js"></script>
 <script src="../assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="../assets/dist/js/adminlte.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('.img-zoom').css('cursor', 'zoom-in');
+    
+    $('.img-zoom').on('click', function() {
+        var src = $(this).attr('src');
+        $('#modalImage').attr('src', src);
+        $('#imageModal').modal('show');
+    });
+});
+</script>
 </body>
 </html>

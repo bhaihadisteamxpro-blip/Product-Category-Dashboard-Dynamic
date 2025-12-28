@@ -69,10 +69,7 @@ if ($selected_category_id > 0) {
   <link rel="stylesheet" href="../assets/plugins/fontawesome-free/css/all.min.css">
   <link rel="stylesheet" href="../assets/dist/css/adminlte.min.css">
   <style>
-    .user-info-sidebar { text-align: center; padding: 15px; background: rgba(0,0,0,0.1); border-radius: 10px; margin: 10px; }
-    .user-avatar { width: 60px; height: 60px; background: #dc3545; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; margin: 0 auto 15px; }
-    .user-name { font-size: 16px; font-weight: bold; color: white; margin-bottom: 5px; }
-    .user-role { display: inline-block; padding: 3px 10px; background: #dc3545; color: white; border-radius: 15px; font-size: 12px; font-weight: bold; }
+
     .category-item { padding: 12px; border: 1px solid #ddd; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.3s; background: #fff; }
     .category-item:hover { background: #f4f4f4; }
     .category-item.active { background: #dc3545; color: white; border-color: #dc3545; box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3); }
@@ -86,29 +83,7 @@ if ($selected_category_id > 0) {
     <ul class="navbar-nav ml-auto"><li class="nav-item"><a class="nav-link" href="../backend/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li></ul>
   </nav>
 
-  <aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <a href="Admin.php" class="brand-link"><span class="brand-text font-weight-light" style="font-weight: bold !important; margin-left: 26px !important; font-size: 25px !important;">ADMIN PANEL</span></a>
-    <div class="sidebar">
-      <div class="user-info-sidebar">
-        <div class="user-avatar"><?php echo strtoupper(substr($full_name, 0, 1)); ?></div>
-        <div class="user-name"><?php echo htmlspecialchars($full_name); ?></div>
-        <div class="user-role"><?php echo strtoupper($department); ?> ADMIN</div>
-      </div>
-      <nav class="mt-2">
-        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-          <li class="nav-item"><a href="Admin.php" class="nav-link"><i class="nav-icon fas fa-tachometer-alt"></i><p>Dashboard</p></a></li>
-          <li class="nav-item menu-open">
-            <a href="#" class="nav-link active"><i class="nav-icon fas fa-archive"></i><p>Categories <i class="fas fa-angle-left right"></i></p></a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item"><a href="view_assigned_categories.php" class="nav-link"><i class="far fa-circle nav-icon"></i><p>View Categories</p></a></li>
-              <li class="nav-item"><a href="edit_assigned_categories.php" class="nav-link active"><i class="far fa-circle nav-icon"></i><p>Manage Inventory</p></a></li>
-            </ul>
-          </li>
-          <li class="nav-item"><a href="admin_settings.php" class="nav-link"><i class="nav-icon fas fa-cog"></i><p>Settings</p></a></li>
-        </ul>
-      </nav>
-    </div>
-  </aside>
+  <?php include 'sidebar.php'; ?>
 
   <div class="content-wrapper">
     <section class="content-header"><div class="container-fluid"><h1>Inventory Details <small class="text-muted">(Read-Only Mode)</small></h1></div></section>

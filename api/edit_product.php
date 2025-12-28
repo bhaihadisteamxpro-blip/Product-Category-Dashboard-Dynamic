@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $image_sql = "";
     
     if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] == 0) {
-        $upload_dir = "../uploads/products/";
+                $upload_dir = "uploads/products/";
         if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
         
         $file_ext = strtolower(pathinfo($_FILES['product_image']['name'], PATHINFO_EXTENSION));

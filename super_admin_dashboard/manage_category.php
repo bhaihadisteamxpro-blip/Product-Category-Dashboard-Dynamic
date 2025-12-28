@@ -47,30 +47,6 @@ $stats = $stats_result->fetch_assoc();
   <!-- DataTables -->
   <link rel="stylesheet" href="../assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
  <style>
-    .user-info-sidebar {
-        text-align: center;
-        padding: 15px;
-        background: rgba(0,0,0,0.1);
-        border-radius: 10px;
-        margin: 10px;
-    }
-    
-    .user-avatar {
-        width: 60px;
-        height: 60px;
-        background: #dc3545;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        font-weight: bold;
-        margin: 0 auto 15px;
-    }
-    
-    .user-name { font-size: 16px; font-weight: bold; color: white; margin-bottom: 5px; }
-    .user-role { display: inline-block; padding: 3px 10px; background: #dc3545; color: white; border-radius: 15px; font-size: 12px; font-weight: bold; }
     .badge-active { background-color: #28a745; color: white; padding: 5px 10px; border-radius: 15px; }
     .badge-inactive { background-color: #dc3545; color: white; padding: 5px 10px; border-radius: 15px; }
     .swal2-popup { font-size: 0.9rem !important; }
@@ -114,45 +90,7 @@ $stats = $stats_result->fetch_assoc();
     </ul>
   </nav>
 
-  <!-- Main Sidebar -->
-  <aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <a href="superadmin.php" class="brand-link">
-      <span class="brand-text font-weight-light" style="font-weight: bold !important; font-family: times; color: white !important; text-align: center !important; margin-left: 26px !important; font-size: 25px !important;">
-        SUPER ADMIN
-      </span>
-    </a>
-
-    <div class="sidebar">
-      <div class="user-info-sidebar">
-        <div class="user-avatar"><?php echo strtoupper(substr($full_name, 0, 1)); ?></div>
-        <div class="user-name"><?php echo htmlspecialchars($full_name); ?></div>
-        <div class="user-role">SUPER ADMIN</div>
-      </div>
-      
-      <nav class="mt-2">
-        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-          <li class="nav-item"><a href="superadmin.php" class="nav-link"><i class="nav-icon fas fa-tachometer-alt"></i><p>Dashboard</p></a></li>
-          <li class="nav-item menu-open">
-            <a href="#" class="nav-link active"><i class="nav-icon fa fa-archive"></i><p>Categories<i class="fas fa-angle-left right"></i></p></a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item"><a href="add_category.php" class="nav-link"><i class="fa fa-plus nav-icon"></i><p>Add Category</p></a></li>
-              <li class="nav-item"><a href="manage_category.php" class="nav-link active"><i class="fa fa-cog nav-icon"></i><p>Manage Categories</p></a></li>
-            </ul> 
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link"><i class="nav-icon fa fa-users"></i><p>User Management<i class="fas fa-angle-left right"></i></p></a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item"><a href="add_admin.php" class="nav-link"><i class="fa fa-user-plus nav-icon"></i><p>Add Admins</p></a></li>
-              <li class="nav-item"><a href="manage_admins.php" class="nav-link"><i class="fa fa-cog nav-icon"></i><p>Manage Admins</p></a></li>
-              <li class="nav-item"><a href="assigned_category.php" class="nav-link"><i class="fas fa-list-alt nav-icon"></i><p>Assign Categories</p></a></li>
-              <li class="nav-item"><a href="assigned_product.php" class="nav-link"><i class="fas fa-boxes nav-icon"></i><p>Assign Products</p></a></li>
-            </ul> 
-          </li>
-          <li class="nav-item"><a href="../backend/logout.php" class="nav-link"><i class="nav-icon fa fa-sign-out-alt"></i><p>Logout</p></a></li>
-        </ul>
-      </nav>
-    </div>
-  </aside>
+  <?php include 'sidebar.php'; ?>
 
   <!-- Content Wrapper -->
   <div class="content-wrapper">
@@ -226,7 +164,7 @@ $stats = $stats_result->fetch_assoc();
                                   data-id="<?php echo $row['id']; ?>" 
                                   data-name="<?php echo htmlspecialchars($row['category_name']); ?>" 
                                   data-desc="<?php echo htmlspecialchars($row['category_description']); ?>"
-                                  data-image="<?php echo htmlspecialchars($row['image']); ?>">
+                                  data-image="<?php echo htmlspecialchars($row['image'] ?? ''); ?>">
                               <i class="fas fa-edit"></i>
                           </button>
                           <button class="btn btn-sm <?php echo $row['status'] == 'active' ? 'btn-warning' : 'btn-success'; ?> toggle-btn" data-id="<?php echo $row['id']; ?>"><i class="fas <?php echo $row['status'] == 'active' ? 'fa-ban' : 'fa-check'; ?>"></i></button>

@@ -39,11 +39,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($check_result->num_rows > 0) {
             $error = "Category name already exists!";
         } else {
+            // Image Upload Logic
+            $image_path = null;
+            if (isset($_FILES['category_image']) && $_FILES['category_image']['error'] == 0) {
+                $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                $file_name = $_FILES['category_image']['name'];
+                $file_tmp = $_FILES['category_image']['tmp_name'];
+                $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+                
+                if (in_array($ext, $allowed)) {
+                    $new_filename = 'cat_' . time() . '_' . rand(1000,9999) . '.' . $ext;
+                    // Target directory relative to this script
+                    $target_dir = "../api/uploads/categories/";
+                    // DB stored path (relative to api folder, as expected by view)
+                    $db_path = "uploads/categories/" . $new_filename;
+                    $target_file = $target_dir . $new_filename;
+                    
+                    if (!is_dir($target_dir)) {
+                        mkdir($target_dir, 0777, true);
+                    }
+                    
+                    if (move_uploaded_file($file_tmp, $target_file)) {
+                        $image_path = $db_path;
+                    }
+                }
+            }
+
             // Insert into database
-            $insert_query = "INSERT INTO categories (category_name, category_description, status, created_by, created_at) 
-                            VALUES (?, ?, ?, ?, NOW())";
+            $insert_query = "INSERT INTO categories (category_name, category_description, status, image, created_by, created_at) 
+                            VALUES (?, ?, ?, ?, ?, NOW())";
             $insert_stmt = $conn->prepare($insert_query);
-            $insert_stmt->bind_param("sssi", $category_name, $category_description, $status, $created_by);
+            $insert_stmt->bind_param("ssssi", $category_name, $category_description, $status, $image_path, $created_by);
             
             if ($insert_stmt->execute()) {
                 $success = "Category added successfully!";
@@ -172,100 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </ul>
   </nav>
 
-  <!-- Main Sidebar Container -->
-  <aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <!-- Brand Logo -->
-    <a href="superadmin.php" class="brand-link">
-      <span class="brand-text font-weight-light" style="font-weight: bold !important; font-family: times; color: white !important; text-align: center !important; margin-left: 26px !important; font-size: 25px !important;">
-        SUPER ADMIN
-      </span>
-    </a>
-
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <!-- Sidebar user panel -->
-      <div class="user-info-sidebar">
-        <div class="user-avatar">
-          <?php echo strtoupper(substr($full_name, 0, 1)); ?>
-        </div>
-        <div class="user-name"><?php echo $full_name; ?></div>
-        <div class="user-role">
-          SUPER ADMIN
-        </div>
-        <div style="color: #ccc; font-size: 12px; margin-top: 5px;">ID: <?php echo $admin_id; ?></div>
-      </div>
-      
-      <!-- Sidebar Menu -->
-      <nav class="mt-2">
-        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-          <li class="nav-item">
-            <a href="superadmin.php" class="nav-link">
-              <i class="nav-icon fas fa-tachometer-alt"></i>
-              <p>Dashboard</p>
-            </a>
-          </li>
-          
-          <!-- Categories -->
-          <li class="nav-item menu-open">
-            <a href="#" class="nav-link active">
-              <i class="nav-icon fa fa-archive"></i>
-              <p>
-                Categories
-                <i class="fas fa-angle-left right"></i>
-              </p>
-            </a>
-            <ul class="nav nav-treeview" style="display: block;">
-              <li class="nav-item">
-                <a href="add_category.php" class="nav-link active">
-                  <i class="fa fa-plus nav-icon"></i>
-                  <p>Add Category</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="manage_category.php" class="nav-link">
-                  <i class="fa fa-cog nav-icon"></i>
-                  <p>Manage Categories</p>
-                </a>
-              </li>
-            </ul> 
-          </li>
-          
-          <!-- User Management -->
-          <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="nav-icon fa fa-users"></i>
-              <p>
-                User Management
-                <i class="fas fa-angle-left right"></i>
-              </p>
-            </a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a href="add_admin.php" class="nav-link">
-                  <i class="fa fa-user-plus nav-icon"></i>
-                  <p>Add Admins</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="manage_admins.php" class="nav-link">
-                  <i class="fa fa-cog nav-icon"></i>
-                  <p>Manage Admins</p>
-                </a>
-              </li>
-            </ul> 
-          </li>
-          
-          <!-- Logout -->
-          <li class="nav-item">
-            <a href="../backend/logout.php" class="nav-link">
-              <i class="nav-icon fa fa-sign-out-alt"></i>
-              <p>Logout</p>
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </div>
-  </aside>
+  <?php include 'sidebar.php'; ?>
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
@@ -314,7 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <h3 class="card-title"><i class="fas fa-archive"></i> Category Information</h3>
               </div>
               <!-- form start -->
-              <form method="POST" action="" id="addCategoryForm">
+              <form method="POST" action="" id="addCategoryForm" enctype="multipart/form-data">
                 <div class="card-body">
                   <div class="text-center mb-4">
                     <div class="category-icon">
@@ -337,6 +270,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <textarea class="form-control" id="category_description" name="category_description" 
                               rows="3" placeholder="Enter category description (optional)"><?php echo isset($category_description) ? htmlspecialchars($category_description) : ''; ?></textarea>
                     <small class="form-text text-muted">Brief description about this category</small>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="category_image">Category Image</label>
+                    <input type="file" class="form-control-file" id="category_image" name="category_image" accept="image/*">
+                    <small class="form-text text-muted">Upload a representative image for the category</small>
                   </div>
 
                   <div class="form-group">
@@ -366,7 +305,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   <button type="reset" class="btn btn-secondary">
                     <i class="fas fa-redo"></i> Reset Form
                   </button>
-                  <a href="manage_categories.php" class="btn btn-default float-right">
+                  <a href="manage_category.php" class="btn btn-default float-right">
                     <i class="fas fa-list"></i> View All Categories
                   </a>
                 </div>

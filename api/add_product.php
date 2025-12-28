@@ -21,8 +21,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
     try {
-        $stmt = $pdo->prepare("INSERT INTO products (product_name, category_id, sku, price, quantity, unit, min_stock, status, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-        if ($stmt->execute([$product_name, $category_id, $sku, $price, $quantity, $unit, $min_stock, $status, $_SESSION['user_id']])) {
+        // Image Upload Logic
+        $image_path = null;
+        if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] == 0) {
+            $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            $file_name = $_FILES['product_image']['name'];
+            $file_tmp = $_FILES['product_image']['tmp_name'];
+            $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+            
+            if (in_array($ext, $allowed)) {
+                $new_filename = 'prod_' . time() . '_' . rand(1000,9999) . '.' . $ext;
+                $target_dir = "uploads/products/";
+                $target_file = $target_dir . $new_filename;
+                
+                if (!is_dir($target_dir)) {
+                    mkdir($target_dir, 0777, true);
+                }
+                
+                if (move_uploaded_file($file_tmp, $target_file)) {
+                    $image_path = $target_file; // Relative path stored in DB
+                }
+            }
+        }
+
+        $stmt = $pdo->prepare("INSERT INTO products (product_name, category_id, sku, price, quantity, unit, min_stock, status, image, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+        if ($stmt->execute([$product_name, $category_id, $sku, $price, $quantity, $unit, $min_stock, $status, $image_path, $_SESSION['user_id']])) {
             echo json_encode(['status' => 'success', 'message' => 'Product added']);
         }
     } catch (PDOException $e) {

@@ -41,10 +41,7 @@ $stats = $conn->query($stats_query)->fetch_assoc();
   <link rel="stylesheet" href="../assets/dist/css/adminlte.min.css">
   <link rel="stylesheet" href="../assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
   <style>
-    .user-info-sidebar { text-align: center; padding: 15px; background: rgba(0,0,0,0.1); border-radius: 10px; margin: 10px; }
-    .user-avatar { width: 60px; height: 60px; background: #dc3545; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; margin: 0 auto 15px; }
-    .user-name { font-size: 16px; font-weight: bold; color: white; margin-bottom: 5px; }
-    .user-role { display: inline-block; padding: 3px 10px; background: #dc3545; color: white; border-radius: 15px; font-size: 12px; font-weight: bold; }
+
     .stock-badge { padding: 4px 8px; border-radius: 10px; font-size: 12px; }
     .stock-ok { background: #d4edda; color: #155724; }
     .stock-low { background: #fff3cd; color: #856404; }
@@ -58,30 +55,7 @@ $stats = $conn->query($stats_query)->fetch_assoc();
     <ul class="navbar-nav"><li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a></li></ul>
   </nav>
 
-  <aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <a href="superadmin.php" class="brand-link"><span class="brand-text font-weight-light" style="font-weight: bold !important; font-family: times; color: white !important; text-align: center !important; margin-left: 26px !important; font-size: 25px !important;">SUPER ADMIN</span></a>
-    <div class="sidebar">
-      <div class="user-info-sidebar">
-        <div class="user-avatar"><?php echo strtoupper(substr($full_name, 0, 1)); ?></div>
-        <div class="user-name"><?php echo htmlspecialchars($full_name); ?></div>
-        <div class="user-role">SUPER ADMIN</div>
-      </div>
-      <nav class="mt-2">
-        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview">
-          <li class="nav-item"><a href="superadmin.php" class="nav-link"><i class="nav-icon fas fa-tachometer-alt"></i><p>Dashboard</p></a></li>
-          <li class="nav-item menu-open">
-                <a href="#" class="nav-link active"><i class="nav-icon fa fa-box"></i><p>Products<i class="fas fa-angle-left right"></i></p></a>
-                <ul class="nav nav-treeview">
-                    <li class="nav-item"><a href="add_product.php" class="nav-link"><i class="fa fa-plus nav-icon"></i><p>Add Product</p></a></li>
-                    <li class="nav-item"><a href="manage_products.php" class="nav-link active"><i class="fa fa-cog nav-icon"></i><p>Manage Products</p></a></li>
-                </ul>
-          </li>
-          <li class="nav-item"><a href="manage_category.php" class="nav-link"><i class="nav-icon fa fa-archive"></i><p>Manage Categories</p></a></li>
-          <li class="nav-item"><a href="../backend/logout.php" class="nav-link"><i class="nav-icon fa fa-sign-out-alt"></i><p>Logout</p></a></li>
-        </ul>
-      </nav>
-    </div>
-  </aside>
+  <?php include 'sidebar.php'; ?>
 
   <div class="content-wrapper">
     <div class="content-header"><div class="container-fluid"><div class="row mb-2"><div class="col-sm-6"><h1>Manage Products</h1></div></div></div></div>
@@ -119,7 +93,7 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                     <td><strong><?php echo htmlspecialchars($row['product_name']); ?></strong><br><small><?php echo htmlspecialchars($row['sku']); ?></small></td>
                     <td>
                         <?php if(!empty($row['image'])): ?>
-                            <img src="../<?php echo htmlspecialchars($row['image']); ?>" alt="Prod Img" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
+                            <img src="../api/<?php echo htmlspecialchars($row['image']); ?>" alt="Prod Img" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
                         <?php else: ?>
                             <span class="text-muted">No Image</span>
                         <?php endif; ?>
@@ -216,7 +190,7 @@ $(document).ready(function() {
         
         var imgPath = $(this).data('image');
         if(imgPath) {
-            $('#edit_img_preview').attr('src', '../' + imgPath);
+            $('#edit_img_preview').attr('src', '../api/' + imgPath);
             $('#image_preview_container').show();
         } else {
             $('#image_preview_container').hide();

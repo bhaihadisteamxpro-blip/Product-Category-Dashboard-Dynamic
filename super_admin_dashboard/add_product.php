@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Handle Image Upload
             $image_path = null;
             if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] == 0) {
-                $upload_dir = "../uploads/products/";
+                $upload_dir = "../api/uploads/products/";
                 if (!is_dir($upload_dir)) {
                     mkdir($upload_dir, 0777, true);
                 }
@@ -126,46 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <link rel="stylesheet" href="../assets/dist/css/adminlte.min.css">
   <!-- Select2 -->
   <link rel="stylesheet" href="../assets/plugins/select2/css/select2.min.css">
-     <style>
-    .user-info-sidebar {
-        text-align: center;
-        padding: 15px;
-        background: rgba(0,0,0,0.1);
-        border-radius: 10px;
-        margin: 10px;
-    }
-    
-    .user-avatar {
-        width: 60px;
-        height: 60px;
-        background: #dc3545;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        font-weight: bold;
-        margin: 0 auto 15px;
-    }
-    
-    .user-name {
-        font-size: 16px;
-        font-weight: bold;
-        color: white;
-        margin-bottom: 5px;
-    }
-    
-    .user-role {
-        display: inline-block;
-        padding: 3px 10px;
-        background: #dc3545;
-        color: white;
-        border-radius: 15px;
-        font-size: 12px;
-        font-weight: bold;
-    }
-  </style>
+
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -224,100 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </ul>
   </nav>
 
-  <!-- Main Sidebar Container -->
-  <aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <!-- Brand Logo -->
-    <a href="superadmin.php" class="brand-link">
-      <span class="brand-text font-weight-light" style="font-weight: bold !important; font-family: times; color: white !important; text-align: center !important; margin-left: 26px !important; font-size: 25px !important;">
-        SUPER ADMIN
-      </span>
-    </a>
-
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <!-- Sidebar user panel -->
-      <div class="user-info-sidebar">
-        <div class="user-avatar">
-          <?php echo strtoupper(substr($full_name, 0, 1)); ?>
-        </div>
-        <div class="user-name"><?php echo $full_name; ?></div>
-        <div class="user-role">
-          SUPER ADMIN
-        </div>
-        <div style="color: #ccc; font-size: 12px; margin-top: 5px;">ID: <?php echo $admin_id; ?></div>
-      </div>
-      
-      <!-- Sidebar Menu -->
-      <nav class="mt-2">
-        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-          <li class="nav-item">
-            <a href="superadmin.php" class="nav-link">
-              <i class="nav-icon fas fa-tachometer-alt"></i>
-              <p>Dashboard</p>
-            </a>
-          </li>
-          
-          <!-- Products -->
-          <li class="nav-item menu-open">
-            <a href="#" class="nav-link active">
-              <i class="nav-icon fa fa-box"></i>
-              <p>
-                Products
-                <i class="fas fa-angle-left right"></i>
-              </p>
-            </a>
-            <ul class="nav nav-treeview" style="display: block;">
-              <li class="nav-item">
-                <a href="add_product.php" class="nav-link active">
-                  <i class="fa fa-plus nav-icon"></i>
-                  <p>Add Product</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="manage_products.php" class="nav-link">
-                  <i class="fa fa-cog nav-icon"></i>
-                  <p>Manage Products</p>
-                </a>
-              </li>
-            </ul> 
-          </li>
-          
-          <!-- Categories -->
-          <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="nav-icon fa fa-archive"></i>
-              <p>
-                Categories
-                <i class="fas fa-angle-left right"></i>
-              </p>
-            </a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a href="add_category.php" class="nav-link">
-                  <i class="fa fa-plus nav-icon"></i>
-                  <p>Add Category</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="manage_categories.php" class="nav-link">
-                  <i class="fa fa-cog nav-icon"></i>
-                  <p>Manage Categories</p>
-                </a>
-              </li>
-            </ul> 
-          </li>
-          
-          <!-- Logout -->
-          <li class="nav-item">
-            <a href="../backend/logout.php" class="nav-link">
-              <i class="nav-icon fa fa-sign-out-alt"></i>
-              <p>Logout</p>
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </div>
-  </aside>
+  <?php include 'sidebar.php'; ?>
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
@@ -616,6 +484,12 @@ $(document).ready(function() {
                 $('#sku').val(sku_suggestion + Math.floor(Math.random() * 1000));
             }
         }
+    });
+
+    // Custom File Input Label Update
+    $(".custom-file-input").on("change", function() {
+        var fileName = $(this).val().split("\\").pop();
+        $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
     });
 });
 </script>
