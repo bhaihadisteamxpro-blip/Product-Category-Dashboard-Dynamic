@@ -24,7 +24,7 @@ $categories_result = $conn->query($categories_query);
 $products_query = "SELECT p.id, p.product_name, c.category_name 
                   FROM products p 
                   LEFT JOIN categories c ON p.category_id = c.id 
-                  WHERE p.status = 'active' ORDER BY p.product_name";
+                  WHERE p.status = 'active' ORDER BY c.category_name, p.product_name";
 $products_result = $conn->query($products_query);
 $all_products = [];
 while($p = $products_result->fetch_assoc()) { $all_products[] = $p; }
@@ -182,12 +182,18 @@ $summary_result = $conn->query($summary_query);
                     <div class="modal-body">
                         <div class="form-group"><label>Admin</label><select name="admin_id" id="modal_admin_id" class="form-control" required><option value="">-- Select --</option><?php $admins_result->data_seek(0); while($a = $admins_result->fetch_assoc()) echo "<option value='{$a['id']}'>{$a['full_name']}</option>"; ?></select></div>
                         <div class="row" style="max-height: 400px; overflow-y: auto;">
-                            <?php foreach($all_products as $p): ?>
+                            <?php 
+                            $current_cat = '';
+                            foreach($all_products as $p): 
+                                if($p['category_name'] !== $current_cat):
+                                    $current_cat = $p['category_name'];
+                            ?>
+                                <div class="col-12 mt-2"><h6 class="font-weight-bold text-dark border-bottom pb-1"><?php echo htmlspecialchars($current_cat); ?></h6></div>
+                            <?php endif; ?>
                                 <div class="col-md-4 mb-2">
                                     <div class="product-item" data-id="<?php echo $p['id']; ?>">
                                         <input type="checkbox" name="product_ids[]" value="<?php echo $p['id']; ?>" class="prod-checkbox">
-                                        <strong><?php echo htmlspecialchars($p['product_name']); ?></strong><br>
-                                        <small class="text-muted"><?php echo htmlspecialchars($p['category_name']); ?></small>
+                                        <strong><?php echo htmlspecialchars($p['product_name']); ?></strong>
                                     </div>
                                 </div>
                             <?php endforeach; ?>

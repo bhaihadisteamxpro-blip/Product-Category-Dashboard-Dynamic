@@ -53,7 +53,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $insert_stmt->bind_param("ssssssss", $admin_id, $full_name, $username, $email, $hashed_password, $phone, $department, $role);
             
             if ($insert_stmt->execute()) {
-                $success = "Admin added successfully!";
+                $new_msg_id = $conn->insert_id; // Capture standard ID
+                
+                // Handle Categories Assignment
+                if (isset($_POST['category_ids']) && is_array($_POST['category_ids'])) {
+                    $assign_cat_sql = "INSERT INTO admin_categories (admin_id, category_id) VALUES (?, ?)";
+                    $assign_cat_stmt = $conn->prepare($assign_cat_sql);
+                    foreach ($_POST['category_ids'] as $cat_id) {
+                        $cat_id = intval($cat_id);
+                        $assign_cat_stmt->bind_param("ii", $new_msg_id, $cat_id);
+                        $assign_cat_stmt->execute();
+                    }
+                }
+
+                // Handle Products Assignment
+                if (isset($_POST['product_ids']) && is_array($_POST['product_ids'])) {
+                    $assign_prod_sql = "INSERT INTO admin_products (admin_id, product_id) VALUES (?, ?)";
+                    $assign_prod_stmt = $conn->prepare($assign_prod_sql);
+                    foreach ($_POST['product_ids'] as $prod_id) {
+                        $prod_id = intval($prod_id);
+                        $assign_prod_stmt->bind_param("ii", $new_msg_id, $prod_id);
+                        $assign_prod_stmt->execute();
+                    }
+                }
+
+                $success = "Admin added successfully with assignments!";
                 
                 // Clear form fields
                 $full_name = $username = $email = $phone = $department = '';
@@ -64,6 +88,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $error = "Error adding admin: " . $conn->error;
             }
         }
+    }
+}
+
+// Fetch Categories and Products for Display
+$cats_data = [];
+$cats_q = "SELECT * FROM categories WHERE status='active'";
+$cats_r = $conn->query($cats_q);
+if($cats_r) {
+    while($row = $cats_r->fetch_assoc()) {
+        $cats_data[] = $row;
+    }
+}
+
+// Organize Products by Category
+$prods_by_cat = [];
+$prods_q = "SELECT * FROM products WHERE status='active'";
+$prods_r = $conn->query($prods_q);
+if($prods_r) {
+    while($row = $prods_r->fetch_assoc()) {
+        $prods_by_cat[$row['category_id']][] = $row;
     }
 }
 ?>
@@ -552,7 +596,74 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                       </label>
                     </div>
                   </div>
+
+                  <hr>
+                  <div class="form-group">
+                    <label>Assign Access (Categories & Products)</label>
+                    <div class="card card-secondary card-outline">
+                        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                            <?php if (!empty($cats_data)): ?>
+                                <?php foreach ($cats_data as $cat): ?>
+                                    <div class="category-block mb-3">
+                                        <div class="custom-control custom-checkbox">
+                                            <input class="custom-control-input category-checkbox" type="checkbox" 
+                                                   id="cat_<?php echo $cat['id']; ?>" 
+                                                   name="category_ids[]" 
+                                                   value="<?php echo $cat['id']; ?>">
+                                            <label for="cat_<?php echo $cat['id']; ?>" class="custom-control-label font-weight-bold">
+                                                <?php echo htmlspecialchars($cat['category_name']); ?>
+                                            </label>
+                                        </div>
+                                        
+                                        <!-- Products List -->
+                                        <div class="ml-4 mt-2 product-list" id="prod_list_<?php echo $cat['id']; ?>">
+                                            <?php if (isset($prods_by_cat[$cat['id']])): ?>
+                                                <?php foreach ($prods_by_cat[$cat['id']] as $prod): ?>
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input class="custom-control-input product-checkbox cat-prod-<?php echo $cat['id']; ?>" 
+                                                               type="checkbox" 
+                                                               id="prod_<?php echo $prod['id']; ?>" 
+                                                               name="product_ids[]" 
+                                                               value="<?php echo $prod['id']; ?>">
+                                                        <label for="prod_<?php echo $prod['id']; ?>" class="custom-control-label font-weight-normal">
+                                                            <?php echo htmlspecialchars($prod['product_name']); ?>
+                                                        </label>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <small class="text-muted">No products available in this category.</small>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <p class="text-muted">No active categories found to assign.</p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                  </div>
                 </div>
+
+                <!-- Add JS for Checkbox Logic -->
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    // When a category is checked/unchecked
+                    const catCheckboxes = document.querySelectorAll('.category-checkbox');
+                    catCheckboxes.forEach(cb => {
+                        cb.addEventListener('change', function() {
+                            const catId = this.value;
+                            const prodCheckboxes = document.querySelectorAll('.cat-prod-' + catId);
+                            prodCheckboxes.forEach(pcb => {
+                                pcb.checked = this.checked;
+                            });
+                        });
+                    });
+
+                    // (Optional) If all products are unchecked, uncheck category? 
+                    // Or if one product is checked, check category?
+                    // For now, let's keep it simple: Category Check = Select All Products.
+                });
+                </script>
 
                 <div class="card-footer">
                   <button type="submit" class="btn btn-primary">

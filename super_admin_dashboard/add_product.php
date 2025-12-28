@@ -62,21 +62,48 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $sku = 'PROD' . date('Ymd') . str_pad(rand(0, 999), 3, '0', STR_PAD_LEFT);
             }
             
-            // Insert into database
-            $insert_query = "INSERT INTO products (product_name, category_id, product_description, sku, price, quantity, unit, min_stock, status, created_by, created_at) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
-            $insert_stmt = $conn->prepare($insert_query);
-            $insert_stmt->bind_param("sisssdissi", $product_name, $category_id, $product_description, $sku, $price, $quantity, $unit, $min_stock, $status, $created_by);
+            // Handle Image Upload
+            $image_path = null;
+            if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] == 0) {
+                $upload_dir = "../uploads/products/";
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0777, true);
+                }
+                
+                $file_ext = strtolower(pathinfo($_FILES['product_image']['name'], PATHINFO_EXTENSION));
+                $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                
+                if (in_array($file_ext, $allowed)) {
+                    $new_filename = uniqid('prod_') . '.' . $file_ext;
+                    $dest_path = $upload_dir . $new_filename;
+                    
+                    if (move_uploaded_file($_FILES['product_image']['tmp_name'], $dest_path)) {
+                        $image_path = 'uploads/products/' . $new_filename;
+                    } else {
+                         $error = "Failed to move uploaded file.";
+                    }
+                } else {
+                    $error = "Invalid file type. Only JPG, PNG, GIF, WEBP allowed.";
+                }
+            }
             
-            if ($insert_stmt->execute()) {
-                $success = "Product added successfully!";
-                // Clear form fields
-                $product_name = $product_description = $sku = '';
-                $price = $quantity = $min_stock = 0;
-                $unit = 'pcs';
-                $status = 'active';
-            } else {
-                $error = "Error adding product: " . $conn->error;
+            if (empty($error)) {
+                // Insert into database
+                $insert_query = "INSERT INTO products (product_name, category_id, product_description, sku, price, quantity, unit, min_stock, status, image, created_by, created_at) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                $insert_stmt = $conn->prepare($insert_query);
+                $insert_stmt->bind_param("sisssdissis", $product_name, $category_id, $product_description, $sku, $price, $quantity, $unit, $min_stock, $status, $image_path, $created_by);
+                
+                if ($insert_stmt->execute()) {
+                    $success = "Product added successfully!";
+                    // Clear form fields
+                    $product_name = $product_description = $sku = '';
+                    $price = $quantity = $min_stock = 0;
+                    $unit = 'pcs';
+                    $status = 'active';
+                } else {
+                    $error = "Error adding product: " . $conn->error;
+                }
             }
         }
     }
@@ -339,7 +366,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <h3 class="card-title"><i class="fas fa-box"></i> Product Information</h3>
               </div>
               <!-- form start -->
-              <form method="POST" action="" id="addProductForm">
+              <form method="POST" action="" id="addProductForm" enctype="multipart/form-data">
                 <div class="card-body">
                   <div class="text-center mb-4">
                     <div class="product-icon">
@@ -374,6 +401,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <small class="form-text text-muted">Choose appropriate category for the product</small>
                       </div>
                     </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="product_image">Product Image</label>
+                    <div class="custom-file">
+                      <input type="file" class="custom-file-input" id="product_image" name="product_image" accept="image/*">
+                      <label class="custom-file-label" for="product_image">Choose file</label>
+                    </div>
+                    <small class="form-text text-muted">Upload product image (JPG, PNG, GIF). Max size 2MB.</small>
                   </div>
 
                   <div class="form-group">

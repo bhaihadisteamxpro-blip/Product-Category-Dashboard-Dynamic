@@ -15,7 +15,9 @@ $department = $_SESSION['department'] ?? 'General';
 
 // Fetch assigned categories for current admin
 $query = "SELECT c.id, c.category_name, c.category_description, c.status, 
-                (SELECT COUNT(*) FROM products p WHERE p.category_id = c.id AND p.status = 'active') as active_products
+                (SELECT COUNT(*) FROM products p 
+                 INNER JOIN admin_products ap ON p.id = ap.product_id 
+                 WHERE p.category_id = c.id AND p.status = 'active' AND ap.admin_id = $user_id) as active_products
           FROM categories c
           INNER JOIN admin_categories ac ON c.id = ac.category_id
           WHERE ac.admin_id = $user_id AND c.status = 'active'

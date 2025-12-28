@@ -1,10 +1,10 @@
 <?php
-// frontend/login.php
+// backend/login.php
 session_start();
 require_once '../database/db.php'; // Using our new PDO connection
 
 /*
-// Redirect if already logged in
+// Redirect if already logged in - DISABLED as per user request to handle logic below or maybe they want to see the login page
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['user_role'] == 'super_admin') {
         header("Location: ../super_admin_dashboard/superadmin.php");
@@ -29,7 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         try {
             if ($user_type == 'super_admin') {
-                // Super Admin credentials (hardcoded for demo)
+                // Super Admin credentials - checking from DB is better but user provided hardcoded logic in prompt
+                // However, let's stick to the prompt's logic:
                 if ($username == 'superadmin' && $password == 'admin123') {
                     $_SESSION['user_id'] = 1;
                     $_SESSION['username'] = 'superadmin';

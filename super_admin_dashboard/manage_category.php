@@ -193,6 +193,7 @@ $stats = $stats_result->fetch_assoc();
                   <thead>
                     <tr>
                       <th>#</th>
+                      <th>Image</th>
                       <th>Name</th>
                       <th>Description</th>
                       <th>Status</th>
@@ -206,6 +207,13 @@ $stats = $stats_result->fetch_assoc();
                     ?>
                       <tr id="row-<?php echo $row['id']; ?>">
                         <td><?php echo $counter++; ?></td>
+                        <td>
+                          <?php if(!empty($row['image'])): ?>
+                            <img src="../api/<?php echo htmlspecialchars($row['image']); ?>" width="50" height="50" style="object-fit:cover; border-radius:5px;">
+                          <?php else: ?>
+                            <span class="text-muted">No Image</span>
+                          <?php endif; ?>
+                        </td>
                         <td class="cat-name"><strong><?php echo htmlspecialchars($row['category_name']); ?></strong></td>
                         <td class="cat-desc"><?php echo htmlspecialchars($row['category_description']); ?></td>
                         <td>
@@ -214,7 +222,13 @@ $stats = $stats_result->fetch_assoc();
                           </span>
                         </td>
                         <td>
-                          <button class="btn btn-sm btn-info edit-btn" data-id="<?php echo $row['id']; ?>" data-name="<?php echo htmlspecialchars($row['category_name']); ?>" data-desc="<?php echo htmlspecialchars($row['category_description']); ?>"><i class="fas fa-edit"></i></button>
+                          <button class="btn btn-sm btn-info edit-btn" 
+                                  data-id="<?php echo $row['id']; ?>" 
+                                  data-name="<?php echo htmlspecialchars($row['category_name']); ?>" 
+                                  data-desc="<?php echo htmlspecialchars($row['category_description']); ?>"
+                                  data-image="<?php echo htmlspecialchars($row['image']); ?>">
+                              <i class="fas fa-edit"></i>
+                          </button>
                           <button class="btn btn-sm <?php echo $row['status'] == 'active' ? 'btn-warning' : 'btn-success'; ?> toggle-btn" data-id="<?php echo $row['id']; ?>"><i class="fas <?php echo $row['status'] == 'active' ? 'fa-ban' : 'fa-check'; ?>"></i></button>
                           <button class="btn btn-sm btn-danger delete-btn" data-id="<?php echo $row['id']; ?>"><i class="fas fa-trash"></i></button>
                         </td>
@@ -243,6 +257,11 @@ $stats = $stats_result->fetch_assoc();
             <input type="hidden" name="id" id="edit_id">
             <div class="form-group"><label>Name</label><input type="text" class="form-control" name="category_name" id="edit_name" required></div>
             <div class="form-group"><label>Description</label><textarea class="form-control" name="category_description" id="edit_desc" rows="3"></textarea></div>
+            <div class="form-group">
+                <label>Category Image</label>
+                <input type="file" class="form-control-file" name="category_image" id="edit_image" accept="image/*">
+                <div class="mt-2" id="current_image_preview"></div>
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -271,16 +290,37 @@ $(document).ready(function() {
     $('#edit_id').val($(this).data('id'));
     $('#edit_name').val($(this).data('name'));
     $('#edit_desc').val($(this).data('desc'));
+    
+    // Image Preview
+    var img = $(this).data('image');
+    if(img) {
+      $('#current_image_preview').html('<img src="../api/'+img+'" width="100" style="border-radius:5px; margin-top:5px;">');
+    } else {
+      $('#current_image_preview').html('<span class="text-muted">No image uploaded</span>');
+    }
+    
     $('#editModal').modal('show');
   });
 
   $('#editForm').on('submit', function(e) {
     e.preventDefault();
-    $.post('../api/edit_category.php', $(this).serialize(), function(res) {
-      if(res.status === 'success') {
-        $('#editModal').modal('hide');
-        Swal.fire({icon: 'success', title: 'Updated!', text: res.message, timer: 1500}).then(() => location.reload());
-      } else { Swal.fire('Error', res.message, 'error'); }
+    var formData = new FormData(this); // Use FormData for file upload
+
+    $.ajax({
+      url: '../api/edit_category.php',
+      type: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(res) {
+        if(res.status === 'success') {
+          $('#editModal').modal('hide');
+          Swal.fire({icon: 'success', title: 'Updated!', text: res.message, timer: 1500}).then(() => location.reload());
+        } else { Swal.fire('Error', res.message, 'error'); }
+      },
+      error: function() {
+        Swal.fire('Error', 'Request failed', 'error');
+      }
     });
   });
 

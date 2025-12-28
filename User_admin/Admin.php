@@ -21,19 +21,19 @@ $cat_query = "SELECT COUNT(*) as count FROM admin_categories WHERE admin_id = $u
 $cat_res = $conn->query($cat_query);
 $total_cats = $cat_res->fetch_assoc()['count'] ?? 0;
 
-// 2. Total active products in assigned categories
+// 2. Total active products in assigned products list
 $prod_query = "SELECT COUNT(p.id) as count 
                FROM products p 
-               INNER JOIN admin_categories ac ON p.category_id = ac.category_id
-               WHERE ac.admin_id = $user_id AND p.status = 'active'";
+               INNER JOIN admin_products ap ON p.id = ap.product_id
+               WHERE ap.admin_id = $user_id AND p.status = 'active'";
 $prod_res = $conn->query($prod_query);
 $total_prods = $prod_res->fetch_assoc()['count'] ?? 0;
 
 // 3. Low Stock Items (Quantity <= min_stock)
 $low_stock_query = "SELECT COUNT(p.id) as count 
                     FROM products p 
-                    INNER JOIN admin_categories ac ON p.category_id = ac.category_id
-                    WHERE ac.admin_id = $user_id AND p.quantity <= p.min_stock AND p.status = 'active'";
+                    INNER JOIN admin_products ap ON p.id = ap.product_id
+                    WHERE ap.admin_id = $user_id AND p.quantity <= p.min_stock AND p.status = 'active'";
 $low_stock_res = $conn->query($low_stock_query);
 $low_stock_count = $low_stock_res->fetch_assoc()['count'] ?? 0;
 
@@ -41,8 +41,8 @@ $low_stock_count = $low_stock_res->fetch_assoc()['count'] ?? 0;
 $recent_prods_query = "SELECT p.*, c.category_name 
                       FROM products p 
                       JOIN categories c ON p.category_id = c.id
-                      JOIN admin_categories ac ON c.id = ac.category_id
-                      WHERE ac.admin_id = $user_id
+                      JOIN admin_products ap ON p.id = ap.product_id
+                      WHERE ap.admin_id = $user_id
                       ORDER BY p.updated_at DESC LIMIT 6";
 $recent_prods = $conn->query($recent_prods_query);
 

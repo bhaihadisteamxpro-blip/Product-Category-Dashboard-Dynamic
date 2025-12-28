@@ -24,15 +24,17 @@ if (isset($_GET['logout'])) {
 // NOTE: Status toggling and Stock updates are removed from UX as per requirement (View Only)
 
 // Fetch assigned categories
-$assigned_categories_query = "SELECT c.id, c.category_name, c.category_description, c.status, COUNT(p.id) as product_count 
+// Fetch assigned categories
+$assigned_categories_query = "SELECT c.id, c.category_name, c.category_description, c.status, 
+                              (SELECT COUNT(*) FROM products p 
+                               JOIN admin_products ap ON p.id = ap.product_id 
+                               WHERE p.category_id = c.id AND p.status = 'active' AND ap.admin_id = ?) as product_count 
                               FROM categories c 
                               INNER JOIN admin_categories ac ON c.id = ac.category_id 
-                              LEFT JOIN products p ON c.id = p.category_id AND p.status = 'active' 
                               WHERE ac.admin_id = ? AND c.status = 'active' 
-                              GROUP BY c.id 
                               ORDER BY c.category_name";
 $assigned_stmt = $conn->prepare($assigned_categories_query);
-$assigned_stmt->bind_param("i", $user_id);
+$assigned_stmt->bind_param("ii", $user_id, $user_id);
 $assigned_stmt->execute();
 $assigned_result = $assigned_stmt->get_result();
 
@@ -44,9 +46,12 @@ if ($selected_category_id > 0) {
     $verify_cat->bind_param("ii", $user_id, $selected_category_id);
     $verify_cat->execute();
     if($verify_cat->get_result()->num_rows > 0) {
-        $products_query = "SELECT p.* FROM products p WHERE p.category_id = ? AND p.status != 'deleted' ORDER BY p.product_name";
+        $products_query = "SELECT p.* FROM products p 
+                           INNER JOIN admin_products ap ON p.id = ap.product_id
+                           WHERE p.category_id = ? AND ap.admin_id = ? AND p.status != 'deleted' 
+                           ORDER BY p.product_name";
         $products_stmt = $conn->prepare($products_query);
-        $products_stmt->bind_param("i", $selected_category_id);
+        $products_stmt->bind_param("ii", $selected_category_id, $user_id);
         $products_stmt->execute();
         $category_products_result = $products_stmt->get_result();
         while ($product = $category_products_result->fetch_assoc()) { $category_products[] = $product; }

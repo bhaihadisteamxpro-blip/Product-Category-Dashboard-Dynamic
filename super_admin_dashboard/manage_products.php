@@ -102,6 +102,7 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                 <tr>
                   <th>#</th>
                   <th>Product Name</th>
+                  <th>Image</th>
                   <th>Category</th>
                   <th>Price</th>
                   <th>Stock</th>
@@ -116,6 +117,13 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                   <tr id="row-<?php echo $row['id']; ?>">
                     <td><?php echo $counter++; ?></td>
                     <td><strong><?php echo htmlspecialchars($row['product_name']); ?></strong><br><small><?php echo htmlspecialchars($row['sku']); ?></small></td>
+                    <td>
+                        <?php if(!empty($row['image'])): ?>
+                            <img src="../<?php echo htmlspecialchars($row['image']); ?>" alt="Prod Img" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
+                        <?php else: ?>
+                            <span class="text-muted">No Image</span>
+                        <?php endif; ?>
+                    </td>
                     <td><?php echo htmlspecialchars($row['category_name'] ?? 'None'); ?></td>
                     <td>₹<?php echo number_format($row['price'], 2); ?></td>
                     <td><span class="stock-badge <?php echo $stock_class; ?>"><?php echo $row['quantity']; ?> <?php echo $row['unit']; ?></span></td>
@@ -130,7 +138,9 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                               data-qty="<?php echo $row['quantity']; ?>" 
                               data-unit="<?php echo $row['unit']; ?>" 
                               data-min="<?php echo $row['min_stock']; ?>" 
-                              data-desc="<?php echo htmlspecialchars($row['product_description']); ?>">
+                              data-min="<?php echo $row['min_stock']; ?>" 
+                              data-desc="<?php echo htmlspecialchars($row['product_description']); ?>"
+                              data-image="<?php echo htmlspecialchars($row['image']); ?>">
                         <i class="fas fa-edit"></i>
                       </button>
                       <button class="btn btn-sm <?php echo $row['status'] == 'active' ? 'btn-warning' : 'btn-success'; ?> toggle-status" data-id="<?php echo $row['id']; ?>">
@@ -160,6 +170,21 @@ $stats = $conn->query($stats_query)->fetch_assoc();
         <div class="col-md-4 form-group"><label>Quantity</label><input type="number" name="quantity" id="edit_qty" class="form-control"></div>
         <div class="col-md-4 form-group"><label>Unit</label><input type="text" name="unit" id="edit_unit" class="form-control"></div>
         <div class="col-md-4 form-group"><label>Min Stock</label><input type="number" name="min_stock" id="edit_min" class="form-control"></div>
+        
+        <div class="col-md-12 form-group">
+            <label>Product Image</label>
+            <div class="input-group">
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="edit_image" name="product_image" accept="image/*">
+                    <label class="custom-file-label" for="edit_image">Choose new file</label>
+                </div>
+            </div>
+            <div id="image_preview_container" class="mt-2" style="display:none;">
+                <label>Current Image:</label>
+                <img id="edit_img_preview" src="" style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px;">
+            </div>
+        </div>
+
         <div class="col-12 form-group"><label>Description</label><textarea name="product_description" id="edit_desc" class="form-control" rows="3"></textarea></div>
     </div><div class="modal-footer"><button type="submit" class="btn btn-danger">Update Product</button></div></form>
   </div></div></div>
@@ -188,14 +213,32 @@ $(document).ready(function() {
         $('#edit_unit').val($(this).data('unit'));
         $('#edit_min').val($(this).data('min'));
         $('#edit_desc').val($(this).data('desc'));
+        
+        var imgPath = $(this).data('image');
+        if(imgPath) {
+            $('#edit_img_preview').attr('src', '../' + imgPath);
+            $('#image_preview_container').show();
+        } else {
+            $('#image_preview_container').hide();
+        }
+        
         $('#editModal').modal('show');
     });
 
     $('#editForm').on('submit', function(e) {
         e.preventDefault();
-        $.post('../api/edit_product.php', $(this).serialize(), function(res) {
-            if(res.status === 'success') Swal.fire('Success', res.message, 'success').then(() => location.reload());
-            else Swal.fire('Error', res.message, 'error');
+        var formData = new FormData(this);
+        
+        $.ajax({
+            url: '../api/edit_product.php',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(res) {
+                if(res.status === 'success') Swal.fire('Success', res.message, 'success').then(() => location.reload());
+                else Swal.fire('Error', res.message, 'error');
+            }
         });
     });
 
