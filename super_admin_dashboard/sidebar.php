@@ -214,6 +214,14 @@ $sidebar_user_initial = strtoupper(substr($sidebar_full_name, 0, 1));
           </ul> 
         </li>
 
+        <!-- Website Users -->
+        <li class="nav-item">
+          <a href="manage_users.php" class="nav-link <?php echo ($current_page == 'manage_users.php') ? 'active' : ''; ?>">
+            <i class="nav-icon fas fa-user-friends"></i>
+            <p>Manage Users</p>
+          </a>
+        </li>
+
         <!-- Categories -->
         <li class="nav-item <?php echo in_array($current_page, ['add_category.php', 'manage_category.php']) ? 'menu-open' : ''; ?>">
           <a href="#" class="nav-link <?php echo in_array($current_page, ['add_category.php', 'manage_category.php']) ? 'active' : ''; ?>">
