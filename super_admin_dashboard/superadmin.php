@@ -19,6 +19,31 @@ if (isset($_GET['logout'])) {
     header('Location: ../frontend/index.php'); // Parent folder ke index.php par jayega
     exit();
 }
+// Fetch Dashboard Statistics
+$stats = [
+    'total_admins' => 0,
+    'active_admins' => 0,
+    'total_products' => 0,
+    'total_categories' => 0
+];
+
+if ($conn) {
+    // Total Admins
+    $res = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'admin'");
+    if ($res) $stats['total_admins'] = $res->fetch_assoc()['count'];
+
+    // Active Admins
+    $res = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'admin' AND status = 'active'");
+    if ($res) $stats['active_admins'] = $res->fetch_assoc()['count'];
+
+    // Total Products
+    $res = $conn->query("SELECT COUNT(*) as count FROM products");
+    if ($res) $stats['total_products'] = $res->fetch_assoc()['count'];
+
+    // Total Categories
+    $res = $conn->query("SELECT COUNT(*) as count FROM categories");
+    if ($res) $stats['total_categories'] = $res->fetch_assoc()['count'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -36,44 +61,12 @@ if (isset($_GET['logout'])) {
   <!-- Theme style -->
   <link rel="stylesheet" href="../assets/dist/css/adminlte.min.css">
   <style>
-    .user-info-sidebar {
-        text-align: center;
-        padding: 15px;
-        background: rgba(0,0,0,0.1);
-        border-radius: 10px;
-        margin: 10px;
-    }
-    
-    .user-avatar {
-        width: 60px;
-        height: 60px;
-        background: #dc3545;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        font-weight: bold;
-        margin: 0 auto 15px;
-    }
-    
-    .user-name {
-        font-size: 16px;
-        font-weight: bold;
-        color: white;
-        margin-bottom: 5px;
-    }
-    
-    .user-role {
-        display: inline-block;
-        padding: 3px 10px;
-        background: #dc3545;
-        color: white;
-        border-radius: 15px;
-        font-size: 12px;
-        font-weight: bold;
-    }
+    /* Custom Styles for Widgets */
+    .small-box .inner { padding: 15px; }
+    .small-box h3 { font-size: 2.5em; font-weight: bold; margin: 0 0 5px 0; white-space: nowrap; }
+    .small-box p { font-size: 1.1em; margin-bottom: 5px; }
+    .small-box .icon { top: 15px; right: 15px; font-size: 60px; opacity: 0.3; transition: all 0.3s linear; }
+    .small-box:hover .icon { font-size: 70px; opacity: 0.5; }
   </style>
 </head>
 
@@ -102,7 +95,7 @@ if (isset($_GET['logout'])) {
         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
           <div class="dropdown-header">
             <div class="d-flex align-items-center">
-              <div class="user-avatar" style="width: 40px; height: 40px; font-size: 18px; margin: 0;">
+              <div class="user-avatar" style="width: 40px; height: 40px; font-size: 18px; margin: 0; background: linear-gradient(135deg, #dc3545, #ff6b6b); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                 <?php echo strtoupper(substr($full_name, 0, 1)); ?>
               </div>
               <div class="ml-3">
@@ -143,7 +136,7 @@ if (isset($_GET['logout'])) {
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1 class="m-0">Super Admin Dashboard</h1>
+            <h1 class="m-0">Dashboard Overview</h1>
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
@@ -161,29 +154,23 @@ if (isset($_GET['logout'])) {
         <!-- Welcome Card -->
         <div class="row">
           <div class="col-12">
-            <div class="card card-primary">
-              <div class="card-header">
-                <h3 class="card-title">
-                  <i class="fas fa-user-circle mr-2"></i>Welcome, <?php echo $full_name; ?>!
-                </h3>
-              </div>
+            <div class="card card-primary card-outline elevation-2">
               <div class="card-body">
-                <div class="row">
-                  <div class="col-md-8">
-                    <h5>Stock Management System - Super Admin Panel</h5>
-                    <p class="mb-1">
-                      <strong>Role:</strong> 
-                      <span class="badge badge-danger">
-                        Super Administrator
-                      </span>
-                    </p>
-                    <p class="mb-1"><strong>Admin ID:</strong> <?php echo $admin_id; ?></p>
-                    <p class="mb-1"><strong>Department:</strong> <?php echo ucfirst($department); ?></p>
-                    <p class="mb-0"><strong>Login Time:</strong> <?php echo date('F j, Y, g:i a'); ?></p>
-                  </div>
-                  <div class="col-md-4 text-center">
-                    <div class="user-avatar" style="width: 100px; height: 100px; font-size: 36px;">
+                <div class="row align-items-center">
+                  <div class="col-md-2 text-center">
+                     <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #007bff, #00d2ff); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto;">
                       <?php echo strtoupper(substr($full_name, 0, 1)); ?>
+                    </div>
+                  </div>
+                  <div class="col-md-10">
+                    <h3 class="text-primary">Welcome back, <?php echo $full_name; ?>!</h3>
+                    <p class="text-muted mb-1">
+                      You are logged in as <strong>Super Administrator</strong>. Here's what's happening in your stock management system today.
+                    </p>
+                    <div class="mt-2">
+                        <span class="badge badge-info mr-2"><i class="fas fa-id-badge mr-1"></i> ID: <?php echo $admin_id; ?></span>
+                        <span class="badge badge-secondary"><i class="fas fa-building mr-1"></i> Dept: <?php echo ucfirst($department); ?></span>
+                        <span class="badge badge-light border ml-2"><i class="far fa-clock mr-1"></i> <?php echo date('F j, Y'); ?></span>
                     </div>
                   </div>
                 </div>
@@ -195,64 +182,61 @@ if (isset($_GET['logout'])) {
         <!-- Small boxes (Stat box) -->
         <div class="row">
           <div class="col-lg-3 col-6">
+            <!-- small box -->
             <div class="small-box bg-info">
               <div class="inner">
-                <h3>15</h3>
+                <h3><?php echo $stats['total_admins']; ?></h3>
                 <p>Total Admins</p>
               </div>
               <div class="icon">
                 <i class="fas fa-users"></i>
               </div>
-              <a href="manage_admins.php" class="small-box-footer">
-                More info <i class="fas fa-arrow-circle-right"></i>
-              </a>
+              <a href="manage_admins.php" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
           </div>
-          
+          <!-- ./col -->
           <div class="col-lg-3 col-6">
+            <!-- small box -->
             <div class="small-box bg-success">
               <div class="inner">
-                <h3>12</h3>
+                <h3><?php echo $stats['active_admins']; ?></h3>
                 <p>Active Admins</p>
               </div>
               <div class="icon">
                 <i class="fas fa-user-check"></i>
               </div>
-              <a href="manage_admins.php?status=active" class="small-box-footer">
-                More info <i class="fas fa-arrow-circle-right"></i>
-              </a>
+              <a href="manage_admins.php" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
           </div>
-          
+          <!-- ./col -->
           <div class="col-lg-3 col-6">
+            <!-- small box -->
             <div class="small-box bg-warning">
               <div class="inner">
-                <h3>150</h3>
+                <h3><?php echo $stats['total_products']; ?></h3>
                 <p>Total Products</p>
               </div>
               <div class="icon">
-                <i class="fas fa-box"></i>
+                <i class="fas fa-box-open"></i>
               </div>
-              <a href="manage_products.php" class="small-box-footer">
-                More info <i class="fas fa-arrow-circle-right"></i>
-              </a>
+              <a href="manage_products.php" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
           </div>
-          
+          <!-- ./col -->
           <div class="col-lg-3 col-6">
+            <!-- small box -->
             <div class="small-box bg-danger">
               <div class="inner">
-                <h3>65<sup style="font-size: 20px">%</sup></h3>
-                <p>Revenue Growth</p>
+                <h3><?php echo $stats['total_categories']; ?></h3>
+                <p>Total Categories</p>
               </div>
               <div class="icon">
-                <i class="ion ion-stats-bars"></i>
+                <i class="fas fa-tags"></i>
               </div>
-              <a href="#" class="small-box-footer">
-                More info <i class="fas fa-arrow-circle-right"></i>
-              </a>
+              <a href="manage_category.php" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
           </div>
+          <!-- ./col -->
         </div>
 
         <!-- Recent Activities -->
