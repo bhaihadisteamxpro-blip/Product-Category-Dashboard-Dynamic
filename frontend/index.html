@@ -1141,6 +1141,7 @@
 
         fetch('../api/user_login.php', {
           method: 'POST',
+          credentials: 'same-origin',
           body: formData
         })
           .then(res => res.json())
@@ -1165,6 +1166,7 @@
 
         fetch('../api/user_signup.php', {
           method: 'POST',
+          credentials: 'same-origin',
           body: formData
         })
           .then(res => res.json())
@@ -1190,7 +1192,7 @@
       // Logout Logic
       document.getElementById('logoutBtn').addEventListener('click', function (e) {
         e.preventDefault();
-        fetch('../api/user_logout.php')
+        fetch('../api/user_logout.php', { credentials: 'same-origin' })
           .then(res => res.json())
           .then(data => {
             location.reload();
@@ -1199,7 +1201,7 @@
 
       // Check Session & Load Products
       function checkSession() {
-        fetch('../api/check_user_session.php')
+        fetch('../api/check_user_session.php', { credentials: 'same-origin' })
           .then(res => res.json())
           .then(data => {
             if (data.status === 'logged_in') {
@@ -1222,7 +1224,7 @@
       }
 
       function loadProducts(isLoggedIn) {
-        fetch('../api/get_products_front.php')
+        fetch('../api/get_products_front.php', { credentials: 'same-origin' })
           .then(res => res.json())
           .then(res => {
             let html = '';

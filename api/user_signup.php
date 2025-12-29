@@ -33,18 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 VALUES (?, ?, ?, ?, ?, 'user', 'active', NOW())";
         $stmt = $pdo->prepare($sql);
         if ($stmt->execute([$admin_id, $full_name, $username, $email, $hashed_password])) {
-             // AUTO-LOGIN Logic here
              $last_id = $pdo->lastInsertId();
-             
-             $_SESSION['user_logged_in'] = true;
-             $_SESSION['user_id'] = $last_id;
-             $_SESSION['user_name'] = $full_name;
-             
+
+             // Do NOT auto-login after signup. Require explicit login for security/verification.
              echo json_encode([
-                 'status' => 'success', 
-                 'message' => 'Account created and logged in!', 
-                 'auto_login' => true,
-                 'user_name' => $full_name
+                 'status' => 'success',
+                 'message' => 'Registration successful. Please log in.',
+                 'auto_login' => false
              ]);
         } else {
              echo json_encode(['status' => 'error', 'message' => 'Registration failed']);
