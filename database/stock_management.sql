@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 27, 2025 at 07:55 PM
+-- Generation Time: Dec 29, 2025 at 08:25 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -39,7 +39,12 @@ CREATE TABLE `admin_categories` (
 --
 
 INSERT INTO `admin_categories` (`id`, `admin_id`, `category_id`, `assigned_date`) VALUES
-(1, 2, 1, '2025-12-27 15:59:16');
+(1, 2, 1, '2025-12-27 15:59:16'),
+(4, 7, 1, '2025-12-28 17:38:11'),
+(5, 11, 1, '2025-12-28 18:44:49'),
+(6, 12, 2, '2025-12-28 18:54:17'),
+(9, 13, 2, '2025-12-28 22:59:32'),
+(11, 22, 3, '2025-12-28 23:38:20');
 
 -- --------------------------------------------------------
 
@@ -59,7 +64,8 @@ CREATE TABLE `admin_products` (
 --
 
 INSERT INTO `admin_products` (`id`, `admin_id`, `product_id`, `assigned_date`) VALUES
-(2, 2, 1, '2025-12-27 15:54:23');
+(13, 22, 4, '2025-12-28 23:39:04'),
+(14, 22, 7, '2025-12-28 23:39:04');
 
 -- --------------------------------------------------------
 
@@ -71,6 +77,7 @@ CREATE TABLE `categories` (
   `id` int(11) NOT NULL,
   `category_name` varchar(100) NOT NULL,
   `category_description` text DEFAULT NULL,
+  `image` varchar(255) DEFAULT NULL,
   `status` enum('active','inactive') DEFAULT 'active',
   `created_by` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -81,8 +88,10 @@ CREATE TABLE `categories` (
 -- Dumping data for table `categories`
 --
 
-INSERT INTO `categories` (`id`, `category_name`, `category_description`, `status`, `created_by`, `created_at`, `updated_at`) VALUES
-(1, 'cash', 'sdsds', 'active', 1, '2025-12-27 14:39:25', '2025-12-27 14:39:25');
+INSERT INTO `categories` (`id`, `category_name`, `category_description`, `image`, `status`, `created_by`, `created_at`, `updated_at`) VALUES
+(1, 'cash', 'sdsds', NULL, 'active', 1, '2025-12-27 14:39:25', '2025-12-27 14:39:25'),
+(2, 'technology', 'hjhh', 'uploads/categories/cat_1766958932_8992.jpg', 'active', 1, '2025-12-27 19:11:36', '2025-12-28 21:55:32'),
+(3, 'gaming pc', 'gaming pc is the beutiful', 'uploads/categories/cat_1766964897_4769.jpg', 'active', 1, '2025-12-28 23:34:57', '2025-12-28 23:34:57');
 
 -- --------------------------------------------------------
 
@@ -119,15 +128,17 @@ CREATE TABLE `products` (
   `status` enum('active','inactive','out_of_stock') DEFAULT 'active',
   `created_by` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `image` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `product_name`, `category_id`, `product_description`, `sku`, `price`, `quantity`, `unit`, `min_stock`, `status`, `created_by`, `created_at`, `updated_at`) VALUES
-(1, 'daal', 1, 'haan', 'DAAL451', 20000.00, 100, '0', 10, 'active', 1, '2025-12-27 14:56:08', '2025-12-27 14:56:56');
+INSERT INTO `products` (`id`, `product_name`, `category_id`, `product_description`, `sku`, `price`, `quantity`, `unit`, `min_stock`, `status`, `created_by`, `created_at`, `updated_at`, `image`) VALUES
+(4, 'car', 2, 'car', 'car', 34.00, 1, '0', 10, 'active', 1, '2025-12-28 23:01:27', '2025-12-28 23:01:27', NULL),
+(7, 'book', 2, 'product', 'BOOK99', 1000.00, 10, '0', 10, 'active', 1, '2025-12-28 23:35:57', '2025-12-28 23:36:35', 'uploads/products/prod_6951bee953ae9.jpg');
 
 -- --------------------------------------------------------
 
@@ -144,7 +155,7 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL,
   `phone` varchar(20) DEFAULT NULL,
   `department` varchar(50) NOT NULL,
-  `role` enum('super_admin','admin','staff') DEFAULT 'admin',
+  `role` enum('super_admin','admin','staff','user') NOT NULL DEFAULT 'user',
   `status` enum('active','inactive','suspended') DEFAULT 'active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
@@ -162,8 +173,13 @@ INSERT INTO `users` (`id`, `admin_id`, `full_name`, `username`, `email`, `passwo
 (4, 'ADM202401001', 'John Doe', 'johndoe', 'john@stock.com', '$2y$10$YourHashedPasswordHere', NULL, 'inventory', 'admin', 'active', '2025-12-27 12:08:09', '2025-12-27 12:08:09', NULL, NULL),
 (5, 'ADM202401002', 'Jane Smith', 'janesmith', 'jane@stock.com', '$2y$10$YourHashedPasswordHere', NULL, 'sales', 'admin', 'active', '2025-12-27 12:08:09', '2025-12-27 12:08:09', NULL, NULL),
 (6, 'ADM20251227681', 'Hadi Memon', 'hadimemon', 'gamerxpro247@gmail.com', '$2y$10$JPddJ/Va1btUHHP2vkniTuxbFRdpwytM7hzzUD/775/8nK1FBKPoe', '03308273801', 'inventory', 'admin', 'active', '2025-12-27 13:30:29', '2025-12-27 14:10:39', NULL, '2025-12-27 14:10:39'),
-(7, 'ADM20251227410', 'hunain', 'hunain', 'hunain@gmail.com', '$2y$10$.8zUmdsKmRHVkCznoFKJUeSlu3JpyJzrnZA46lqdzz3D6Q9JyQ4z.', '03302071264', 'warehouse', 'admin', 'active', '2025-12-27 14:13:21', '2025-12-27 16:47:31', NULL, '2025-12-27 16:47:31'),
-(10, 'ADMIN002', 'Hadi', 'hadi', '', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NULL, 'sales', 'admin', 'active', '2025-12-27 17:48:27', '2025-12-27 17:48:27', NULL, NULL);
+(7, 'ADM20251227410', 'hunain', 'hunain', 'hunain@gmail.com', '$2y$10$aI6Fl9MGtRnIoYEEG5zMB.p4WjY5t5mRKt13rBQ/SqruTVyu6MzJ.', '03302071264', 'warehouse', 'admin', 'active', '2025-12-27 14:13:21', '2025-12-28 20:18:44', NULL, '2025-12-28 20:18:44'),
+(10, 'ADMIN002', 'Hadi', 'hadi', '', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NULL, 'sales', 'admin', 'active', '2025-12-27 17:48:27', '2025-12-27 17:48:27', NULL, NULL),
+(11, 'ADM20251228745', 'Abdulhadi2', 'abdulhadi22', 'hadi@gmail.com', '$2y$10$SBgSgQZGUtfS13XuuvL2ru73i5TdZyMulWiyWuSM14eUihdx6CCSK', '03302578540', 'inventory', 'admin', 'active', '2025-12-27 19:10:36', '2025-12-27 19:14:13', NULL, '2025-12-27 19:14:13'),
+(12, 'ADM20251228933', 'junaid', 'junaid', 'junaid123@gmail.com', '$2y$10$tkoWxtOOmmxCI6bb6z5HNupooatmabBgCk7Jfz8JrT9MtsULiBm/O', '03308273801', 'electrical', 'admin', 'active', '2025-12-28 18:52:46', '2025-12-28 18:54:45', NULL, '2025-12-28 18:54:45'),
+(13, 'ADM20251229396', 'irfan', 'irfan', 'irfan@gmail.com', '$2y$10$AquiirQkzjoCD5s.xKf/ne9mfTzb8msufLnbfmv7tPQe234HIAj6S', '03308273801', 'purchase', 'admin', 'active', '2025-12-28 20:29:51', '2025-12-29 07:22:04', NULL, '2025-12-29 07:22:04'),
+(14, 'USR20251229445', 'Demo User', 'user', 'user@example.com', '$2y$10$2YuMbpzIN8ax.RQQLMlUk.iWVnqLHa.gpxkz1v9U1qFFOCjJEf2hy', '1234567890', '', 'user', 'active', '2025-12-28 21:20:16', '2025-12-28 22:08:35', NULL, NULL),
+(22, 'ADM20251229750', 'jawed', 'jawed', 'jawed@gmail.com', '$2y$10$.ndWq7m1iQv6FRi6QWfMMuLPxqkXoBem9nCT.AHUYg28mbypSJ6d6', '03308273801', 'purchase', 'admin', 'active', '2025-12-28 23:33:01', '2025-12-28 23:40:19', NULL, '2025-12-28 23:40:19');
 
 --
 -- Indexes for dumped tables
@@ -232,19 +248,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `admin_categories`
 --
 ALTER TABLE `admin_categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `admin_products`
 --
 ALTER TABLE `admin_products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `permissions`
@@ -256,13 +272,13 @@ ALTER TABLE `permissions`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- Constraints for dumped tables
